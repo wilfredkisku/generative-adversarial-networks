@@ -17,7 +17,7 @@ BATCH_SIZE = 256
 
 def make_generator_model():
     model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Dense(7*7*256, use_bias=False, input_shape=(10,)))
+    model.add(tf.keras.layers.Dense(7*7*256, use_bias=False, input_shape=(100,)))
     model.add(tf.keras.layers.BatchNormalization())
     model.add(tf.keras.layers.LeakyReLU())
 
@@ -39,6 +39,34 @@ def make_generator_model():
 
     return model
 
+def make_discriminator_model():
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', input_shape=[28, 28, 1]))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Dropout(0.3))
+
+    model.add(tf.keras.layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same'))
+    model.add(tf.keras.layers.LeakyReLU())
+    model.add(tf.keras.layers.Dropout(0.3))
+
+    model.add(tf.keras.layers.Flatten())
+    model.add(tf.keras.layers.Dense(1))
+
+    return model
+
+def generator_loss(fake_output):
+    return cross_entropy(tf.ones_like(fake_output), fake_output)
+
+def discriminator_loss(real_output, fake_output):
+    real_loss = cross_entropy(tf.ones_like(real_output), real_output)
+    fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
+    total_loss = real_loss + fake_loss
+    return total_loss
+
+def cross_entropy():
+    cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True) 
+    return cross_entropy
+
 
 if __name__ == '__main__':
 
@@ -50,7 +78,7 @@ if __name__ == '__main__':
     generator = make_generator_model()
     generator.summary()
 
-    noise = tf.random.normal([1, 10])
+    noise = tf.random.normal([1, 100])
 
     #print(noise.numpy())
 
@@ -60,4 +88,11 @@ if __name__ == '__main__':
 
     plt.show()
     
+    discriminator = make_discriminator_model()
+    decision = discriminator(generated_image)
+    print (decision)
 
+    #print(type(cross_entropy()))
+    #print(type(tf.keras.losses.BinaryCrossentropy(from_logits=True)))
+
+    
